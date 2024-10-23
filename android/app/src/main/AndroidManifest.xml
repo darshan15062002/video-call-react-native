@@ -36,6 +36,10 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
 
+
+    <meta-data
+        android:name="com.google.firebase.messaging.default_notification_sound"
+        android:resource="@raw/ringtone" />
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
@@ -49,6 +53,12 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+             <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="videocall" android:host="video-call" />
+    </intent-filter>
         </activity>
 
         <activity
