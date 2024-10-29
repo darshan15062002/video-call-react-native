@@ -28,7 +28,7 @@ const linking = {
   prefixes: ['videocall://'],
   config: {
     screens: {
-      VideoCall: 'video-call/:email/:roomId/:self',
+      VideoCall: 'video-call/:email/:roomId',
     },
   },
 };

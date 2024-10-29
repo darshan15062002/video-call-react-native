@@ -21,6 +21,7 @@ export const showIncomingCallNotification=async()=>{
           { title: 'Answer', pressAction: { id: 'answer' } },
           { title: 'Decline', pressAction: { id: 'decline' } },
         ],
+        ongoing: true
       },
       ios: {
         sound: 'ringtone.caf', // Ensure sound is added in iOS project

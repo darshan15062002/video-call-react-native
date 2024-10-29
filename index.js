@@ -23,7 +23,7 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
                 const phone = userData.user.phone;
                 const roomId = userData.user.code;
 
-                const link = `videocall://video-call/${phone}/${roomId}/true`;
+                const link = `videocall://video-call/${phone}/${roomId}`;
                 console.log(link);
 
                 // Open the deep link

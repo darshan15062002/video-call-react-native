@@ -58,7 +58,11 @@ function Login({navigation}: any): React.JSX.Element {
           console.log(userData?.user?.phone, userData?.user?.code);
 
           if (userData?.user) {
-            handleMakeConnection(userData?.user?.name, userData?.user?.code);
+            handleMakeConnection(
+              userData?.user?.name,
+              userData?.user?.code,
+              true,
+            );
           }
         } else if (detail.pressAction.id === 'decline') {
           // Handle decline logic
@@ -92,10 +96,14 @@ function Login({navigation}: any): React.JSX.Element {
     return () => unsubscribe();
   }, []);
 
-  const handleMakeConnection = (email: string, roomId: string) => {
+  const handleMakeConnection = (
+    email: string,
+    roomId: string,
+    self: boolean,
+  ) => {
     // Implement your call connection logic here
     console.log(`Initiating call to ${email} in room ${roomId}`);
-    navigation.navigate('VideoCall', {email, roomId, self: false});
+    navigation.navigate('VideoCall', {email, roomId, self});
   };
 
   if (userLoading) {
@@ -146,7 +154,9 @@ function Login({navigation}: any): React.JSX.Element {
                 key={item.phone}>
                 <Text style={{color: 'black'}}>{item.name}</Text>
                 <TouchableOpacity
-                  onPress={() => handleMakeConnection(item.phone, item.code)}
+                  onPress={() =>
+                    handleMakeConnection(user.phone, item.code, false)
+                  }
                   style={{
                     backgroundColor: 'green',
                     borderRadius: 50,

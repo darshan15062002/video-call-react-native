@@ -11,8 +11,10 @@ import {io, Socket} from 'socket.io-client';
 import {SafeAreaView} from 'react-native';
 import VideoStreamView from '../components/VideoStreamView';
 import CallControls from '../components/CallControls';
+import {useUser} from '../hook/useUser';
 
 const VideoCallScreen = ({route, navigation}: any) => {
+  const {user} = useUser();
   const {email, roomId, self} = route.params;
   const [socket, setSocket] = useState<Socket | null>(null);
   const [roomJoin, setRoomJoin] = useState('');
@@ -45,6 +47,7 @@ const VideoCallScreen = ({route, navigation}: any) => {
         // const email = user${generateRandomString(5)}@example.com;
 
         setEventMessage('Connecting...');
+        console.log(roomId, email, self);
 
         _socket.emit('join_room', {room_id: roomId, email_id: email, self});
       } else {
@@ -173,36 +176,56 @@ const VideoCallScreen = ({route, navigation}: any) => {
       socket.on('user_joined', handleNewUserJoin);
       socket.on('incomming_call', handleIncommingCall);
       socket.on('call_accepted', handleCallAccepted);
-      socket.on('ice_candidate', async ({candidate}) => {
-        try {
-          if (candidate) {
-            await peerConnection.current.addIceCandidate(
-              new RTCIceCandidate(candidate),
-            );
-          }
-        } catch (error) {
-          console.error('Error adding received ICE candidate', error);
-        }
-      });
+      socket.on('call_ended', handleEndCall);
+      socket.on('ice_candidate', handleIceCandidate);
 
       return () => {
         socket.off('user_joined', handleNewUserJoin);
         socket.off('incomming_call', handleIncommingCall);
         socket.off('call_accepted', handleCallAccepted);
-        socket.on('ice_candidate', async ({candidate}) => {
-          try {
-            if (candidate) {
-              await peerConnection.current.addIceCandidate(
-                new RTCIceCandidate(candidate),
-              );
-            }
-          } catch (error) {
-            console.error('Error adding received ICE candidate', error);
-          }
-        });
+        socket.off('call_ended', handleEndCall);
+        socket.off('ice_candidate', handleIceCandidate);
       };
     }
   }, [socket]);
+
+  const handleIceCandidate = async ({candidate}: any) => {
+    try {
+      if (candidate && peerConnection.current) {
+        await peerConnection.current.addIceCandidate(
+          new RTCIceCandidate(candidate),
+        );
+      }
+    } catch (error) {
+      console.error('Error adding received ICE candidate', error);
+    }
+  };
+
+  const handleEndCall = () => {
+    console.log('call ended');
+
+    // Close the peer connection
+    if (peerConnection.current) {
+      peerConnection.current.close();
+      peerConnection.current = null; // Clear the reference
+    }
+
+    // Stop all local media tracks
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
+
+    // Reset state variables
+    setStream(null);
+    setRemoteStream(null);
+    setRoomJoin('');
+
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate('Login');
+    }
+  };
 
   useEffect(() => {
     if (socket && peerConnection.current) {
@@ -260,11 +283,9 @@ const VideoCallScreen = ({route, navigation}: any) => {
   }, []);
 
   const handleHagout = () => {
-    if (peerConnection.current) {
-      // peerConnection.current.close();
-      setStream(null);
-      setRemoteStream(null);
-      setRoomJoin('');
+    if (peerConnection.current && socket) {
+      socket.emit('end-call', {room_id: roomId});
+      handleEndCall();
     }
   };
 
